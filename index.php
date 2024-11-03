@@ -1,19 +1,20 @@
 <?php
-//игра виселица
+//hangman game
 
-// Начать игру
+// Start the game
 
-// Выводим маску слова и базовую виселицу 1 этап
-// Запрос на ввод буквы
-// Проверяем эту букву в массиве букв из которого состоит слово
-// Если нет буквы, меняем картинку и убавляем количество попыток.
+// Output the word mask and the basic hangman Stage 1
+// Request to enter a letter
+// Check this letter in the array of letters that make up the word
+// If there is no letter, change the picture and decrease the number of attempts.
 
-// Если есть буква, меняем маску слова. 
+// If there is a letter, change the word mask.
 
-// Проверяем остались ли нераскрытые буквы.
-// Если не осталось, то слово раскрыто. Если осталось, запускаем этот цикл заново.
+// Check if there are any unsolved letters left.
+// If there are none, then the word is solved. If there are any, start this cycle again.
 
-//define('ATTEMPT', '6'); 
+//define('ATTEMPTS', '6'); 
+const ATTEMPTS = 6;
 startGame();
 
 function startGame()
@@ -22,16 +23,16 @@ function startGame()
         $word = getWord();
         echo $word;
         if (playGame($word) === false) {
-            break; // Прерываем цикл, если playGame вернула false
+            break; // Break the loop if playGame returned false
         }
     } while (true);
 }
 function getWord()
 {
     $fileContent = file_get_contents('/Applications/MAMP/htdocs/hangman/words.txt');
-    // Разбиваем содержимое на массив слов, используя пробелы, переносы строк и знаки пунктуации
+    // Split the content into an array of words using spaces, line breaks, and punctuation
     $words = preg_split('/[\s,.;!?]+/', $fileContent, -1, PREG_SPLIT_NO_EMPTY);
-    // Получаем случайное слово
+    // Get a random word
     $randomWord = mb_strtolower($words[array_rand($words)]);
     return $randomWord;
 }
@@ -41,29 +42,24 @@ function playGame($word)
     $mask = createMask($word);
     echo $mask . PHP_EOL;
     $fails = 0;
-    $attempts = 6;
-    //for ($i = 0; $i <= $attempts; $i++) {
-    do{
-        $letter = mb_strtolower(readline("Введите букву: "));
+    $attempts = ATTEMPTS;
+    do {
+        $letter = mb_strtolower(readline("Enter letter: "));
         $mask = updateMask($word, $mask, $letter, $fails, $attempts);
 
         echo $mask . PHP_EOL;
-        echo "Попыток осталось: " . $attempts . PHP_EOL;
+        echo "Attempts remaining: " . $attempts . PHP_EOL;
         if ($mask === $word) {
-            echo 'Ура выиграли' . PHP_EOL;
+            echo 'YEAAH! You won' . PHP_EOL;
             break;
         }
 
         if ($attempts < 1) {
-            echo 'Проиграли, попытки закончились' . PHP_EOL;
+            echo 'You lost. Attempts are over' . PHP_EOL;
             break;
         }
-    }
-    while(true);
-        //printImage($currentAttempt);
-    //}
-
-    $exit = mb_strtolower(readline("Попробовать еще (y / n): "));
+    } while (true);
+    $exit = mb_strtolower(readline("Try again? (y / n): "));
     if ($exit == 'y') {
         return true;
     } else {
