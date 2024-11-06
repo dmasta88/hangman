@@ -19,17 +19,17 @@ startGame();
 
 function startGame()
 {
-    do {
+    while (true){
         $word = getWord();
-        echo $word;
         if (playGame($word) === false) {
             break; // Break the loop if playGame returned false
         }
-    } while (true);
+
+    };
 }
 function getWord()
 {
-    $fileContent = file_get_contents('/Applications/MAMP/htdocs/hangman/words.txt');
+    $fileContent = file_get_contents(__DIR__.'/words.txt');
     // Split the content into an array of words using spaces, line breaks, and punctuation
     $words = preg_split('/[\s,.;!?]+/', $fileContent, -1, PREG_SPLIT_NO_EMPTY);
     // Get a random word
@@ -38,27 +38,33 @@ function getWord()
 }
 function playGame($word)
 {
-    $wordLength = mb_strlen($word);
     $mask = createMask($word);
+    $updatedMask = '';
     echo $mask . PHP_EOL;
     $fails = 0;
     $attempts = ATTEMPTS;
-    do {
+    while (true){
         $letter = mb_strtolower(readline("Enter letter: "));
-        $mask = updateMask($word, $mask, $letter, $fails, $attempts);
-
-        echo $mask . PHP_EOL;
+        $updatedMask = updateMask($word, $mask, $letter);
+        if ($updatedMask == $mask) {
+            $fails++;
+            $attempts--;
+        }
+        $mask = $updatedMask;
+        printImage($fails);
+        echo $updatedMask . PHP_EOL;
         echo "Attempts remaining: " . $attempts . PHP_EOL;
-        if ($mask === $word) {
+        if ($updatedMask === $word) {
             echo 'YEAAH! You won' . PHP_EOL;
             break;
         }
 
         if ($attempts < 1) {
             echo 'You lost. Attempts are over' . PHP_EOL;
+            echo 'The word: '.$word . PHP_EOL;
             break;
         }
-    } while (true);
+    };
     $exit = mb_strtolower(readline("Try again? (y / n): "));
     if ($exit == 'y') {
         return true;
@@ -70,7 +76,7 @@ function createMask($word)
 {
     return str_repeat('*', mb_strlen($word));
 }
-function updateMask($word, $mask, $letter, &$fails, &$attempts)
+function updateMask($word, $mask, $letter)
 {
     $updatedMask = '';
     for ($i = 0; $i < mb_strlen($word); $i++) {
@@ -80,11 +86,6 @@ function updateMask($word, $mask, $letter, &$fails, &$attempts)
             $updatedMask .= mb_substr($mask, $i, 1);
         }
     }
-    if ($updatedMask == $mask) {
-        $fails++;
-        $attempts--;
-    }
-    printImage($fails);
     return $updatedMask;
 }
 function printImage($currentAttempt)
